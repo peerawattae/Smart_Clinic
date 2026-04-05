@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointments</title>
+</head>
+<body>
+    <h1>My Appointments</h1>
+    <a href="{% url 'appointments:appointment_create' %}">Book New Appointment</a>
+    <ul>
+        {% for appointment in appointments %}
+            <li>
+                <a href="{% url 'appointments:appointment_detail' appointment.pk %}">
+                    {{ appointment.date }} at {{ appointment.time_slot }} - {{ appointment.get_status_display }}
+                </a>
+            </li>
+        {% empty %}
+            <li>No appointments found.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

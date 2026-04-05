@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointment Detail</title>
+</head>
+<body>
+    <h1>Appointment Details</h1>
+    <p><strong>Patient:</strong> {{ appointment.patient.get_full_name }}</p>
+    <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
+    <p><strong>Date:</strong> {{ appointment.date }}</p>
+    <p><strong>Time:</strong> {{ appointment.time_slot }} - {{ appointment.end_time }}</p>
+    <p><strong>Status:</strong> {{ appointment.get_status_display }}</p>
+    <p><strong>Reason:</strong> {{ appointment.reason }}</p>
+
+    <a href="{% url 'appointments:appointment_list' %}">Back to List</a>
+</body>
+</html>
