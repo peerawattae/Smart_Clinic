@@ -1,22 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Appointments</title>
-</head>
-<body>
-    <h1>My Appointments</h1>
-    <a href="{% url 'appointments:appointment_create' %}">Book New Appointment</a>
-    <ul>
-        {% for appointment in appointments %}
-            <li>
-                <a href="{% url 'appointments:appointment_detail' appointment.pk %}">
-                    {{ appointment.date }} at {{ appointment.time_slot }} - {{ appointment.get_status_display }}
+{% extends 'users/base.html' %}
+
+{% block title %}My Appointments - Smart Clinic{% endblock %}
+
+{% block content %}
+<style>
+    .appointments-container {
+        width: 100%;
+        max-width: 900px;
+        z-index: 10;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .header-section h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #F8FAFC, #94A3B8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .appointment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .appointment-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .appointment-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--primary);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-confirmed { background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-completed { background: rgba(59, 130, 246, 0.2); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-cancelled { background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .date-box {
+        margin-bottom: 1rem;
+    }
+
+    .date-box .date {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #F8FAFC;
+    }
+
+    .date-box .time {
+        font-size: 1rem;
+        color: #94A3B8;
+        font-weight: 500;
+    }
+
+    .info-line {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+        color: #CBD5E1;
+        font-size: 0.95rem;
+    }
+
+    .info-line i {
+        color: var(--primary);
+        width: 1.25rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--glass-bg);
+        border-radius: 24px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #94A3B8;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="appointments-container">
+    <div class="header-section">
+        <h1>My Appointments</h1>
+        <a href="{% url 'appointments:appointment_create' %}" class="btn">Book New</a>
+    </div>
+
+    {% if appointments %}
+        <div class="appointment-grid">
+            {% for appointment in appointments %}
+                <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="appointment-card">
+                    <div class="status-badge status-{{ appointment.status }}">
+                        {{ appointment.get_status_display }}
+                    </div>
+                    
+                    <div class="date-box">
+                        <div class="date">{{ appointment.date|date:"M d, Y" }}</div>
+                        <div class="time">{{ appointment.time_slot|time:"g:i A" }}</div>
+                    </div>
+
+                    <div class="info-line">
+                        <strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}
+                    </div>
+                    
+                    <div class="info-line">
+                        <strong>Reason:</strong> {{ appointment.reason|truncatechars:30 }}
+                    </div>
                 </a>
-            </li>
-        {% empty %}
-            <li>No appointments found.</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h3>No appointments scheduled</h3>
+            <p>You haven't booked any appointments yet. Start by booking one with our expert doctors.</p>
+            <a href="{% url 'appointments:appointment_create' %}" class="btn">Book Your First Appointment</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -22,6 +22,16 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Clinic Info', {'fields': ('role', 'phone', 'date_of_birth', 'address', 'profile_image')}),
     )
+    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+        (None, {'fields': ('role',)}),
+    )
+    actions = ['approve_doctors']
+
+    @admin.action(description='Approve selected doctors (Set active)')
+    def approve_doctors(self, request, queryset):
+        # Only activate doctors who are not active
+        updated = queryset.filter(role=User.Role.DOCTOR, is_active=False).update(is_active=True)
+        self.message_user(request, f'Successfully approved {updated} doctor(s).')
 
     def get_inlines(self, request, obj=None):
         if obj is None:
