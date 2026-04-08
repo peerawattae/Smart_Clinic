@@ -29,5 +29,35 @@
     ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+    .doctor-fields {
+        display: none;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const roleInputs = document.querySelectorAll('input[name="role"]');
+        const specField = document.getElementById('id_specialization').closest('p');
+        const licField = document.getElementById('id_license_number').closest('p');
+        
+        // Wrap them up visually or just toggle them
+        const toggleFields = () => {
+            const role = document.querySelector('input[name="role"]:checked').value;
+            if(role === 'doctor') {
+                specField.style.display = 'flex';
+                licField.style.display = 'flex';
+            } else {
+                specField.style.display = 'none';
+                licField.style.display = 'none';
+            }
+        };
+
+        roleInputs.forEach(input => input.addEventListener('change', toggleFields));
+        toggleFields(); // initial run
+    });
+</script>
 {% endblock %}

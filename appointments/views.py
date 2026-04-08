@@ -1,11 +1,8 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
-
-from .models import Appointment
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
+from .models import Appointment, DoctorAvailability
 
 class AppointmentListView(LoginRequiredMixin, ListView):
     model = Appointment
@@ -14,14 +11,13 @@ class AppointmentListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        # Patient sees their own appointments
-        if hasattr(user, 'role') and user.role == 'patient':
+        if user.role == 'patient':
             return Appointment.objects.filter(patient=user)
-        # Doctor sees their own appointments
-        elif hasattr(user, 'role') and user.role == 'doctor':
+        elif user.role == 'doctor':
             return Appointment.objects.filter(doctor=user)
-        # Admins or Staff might see all
-        return Appointment.objects.all()
+        if user.is_superuser:
+            return Appointment.objects.all()
+        return Appointment.objects.none()
 
 class AppointmentDetailView(LoginRequiredMixin, DetailView):
     model = Appointment
@@ -30,11 +26,13 @@ class AppointmentDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         user = self.request.user
-        if hasattr(user, 'role') and user.role == 'patient':
+        if user.role == 'patient':
             return Appointment.objects.filter(patient=user)
-        elif hasattr(user, 'role') and user.role == 'doctor':
+        elif user.role == 'doctor':
             return Appointment.objects.filter(doctor=user)
-        return Appointment.objects.all()
+        if user.is_superuser:
+            return Appointment.objects.all()
+        return Appointment.objects.none()
 
 class AppointmentCreateView(LoginRequiredMixin, CreateView):
     model = Appointment
@@ -43,6 +41,39 @@ class AppointmentCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('appointments:appointment_list')
 
     def form_valid(self, form):
-        # Automatically set the current logged in user as the patient
         form.instance.patient = self.request.user
+        return super().form_valid(form)
+
+class AppointmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Appointment
+    template_name = 'appointments/appointment_form.html'
+    fields = ['status', 'notes']
+    success_url = reverse_lazy('appointments:appointment_list')
+
+    def test_func(self):
+        appointment = self.get_object()
+        return self.request.user == appointment.doctor or self.request.user.is_superuser
+
+class DoctorAvailabilityListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = DoctorAvailability
+    template_name = 'appointments/availability_list.html'
+    context_object_name = 'slots'
+
+    def test_func(self):
+        return self.request.user.role == 'doctor' or self.request.user.is_superuser
+
+    def get_queryset(self):
+        return DoctorAvailability.objects.filter(doctor=self.request.user)
+
+class DoctorAvailabilityCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = DoctorAvailability
+    template_name = 'appointments/appointment_form.html'
+    fields = ['weekday', 'start_time', 'end_time']
+    success_url = reverse_lazy('appointments:availability_list')
+
+    def test_func(self):
+        return self.request.user.role == 'doctor' or self.request.user.is_superuser
+
+    def form_valid(self, form):
+        form.instance.doctor = self.request.user
         return super().form_valid(form)

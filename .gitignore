@@ -4,3 +4,9 @@ __pycache__/
 db.sqlite3
 .env
 .DS_Store
+.pyre/
+.pyre_configuration
+.vscode/
+.idea/
+*.swp
+*.swo
