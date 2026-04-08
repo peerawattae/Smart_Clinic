@@ -15,7 +15,7 @@ class CustomUserCreationForm(UserCreationForm):
     specialization = forms.CharField(max_length=100, required=False)
     license_number = forms.CharField(max_length=50, required=False)
 
-    class Meta(UserCreationForm.Meta):
+    class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'role')
 

@@ -34,15 +34,27 @@ class AppointmentDetailView(LoginRequiredMixin, DetailView):
             return Appointment.objects.all()
         return Appointment.objects.none()
 
+from .forms import AppointmentForm
+
 class AppointmentCreateView(LoginRequiredMixin, CreateView):
     model = Appointment
+    form_class = AppointmentForm
     template_name = 'appointments/appointment_form.html'
-    fields = ['doctor', 'date', 'time_slot', 'end_time', 'reason']
     success_url = reverse_lazy('appointments:appointment_list')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
-        form.instance.patient = self.request.user
+        user = self.request.user
+        if user.role == 'doctor':
+            form.instance.doctor = user
+        elif user.role == 'patient':
+            form.instance.patient = user
         return super().form_valid(form)
+
 
 class AppointmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Appointment

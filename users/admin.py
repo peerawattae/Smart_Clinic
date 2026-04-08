@@ -19,12 +19,13 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_active')
     list_filter = ('role', 'is_active', 'is_staff')
     search_fields = ('username', 'email', 'first_name', 'last_name')
-    fieldsets = BaseUserAdmin.fieldsets + (
+    fieldsets = tuple(BaseUserAdmin.fieldsets or ()) + (
         ('Clinic Info', {'fields': ('role', 'phone', 'date_of_birth', 'address', 'profile_image')}),
     )
-    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+    add_fieldsets = tuple(BaseUserAdmin.add_fieldsets or ()) + (
         (None, {'fields': ('role',)}),
     )
+
     actions = ['approve_doctors']
 
     @admin.action(description='Approve selected doctors (Set active)')
