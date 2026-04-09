@@ -2,8 +2,22 @@ from django.db import models
 from django.conf import settings
 
 
+class MedicalRecordManager(models.Manager):
+    def for_user(self, user):
+        if user.is_superuser:
+            return self.all()
+        if hasattr(user, 'role'):
+            if user.role == 'doctor':
+                return self.filter(doctor=user)
+            if user.role == 'patient':
+                return self.filter(patient=user)
+        return self.none()
+
+
 class MedicalRecord(models.Model):
     """A medical record created during or after an appointment."""
+    objects = MedicalRecordManager()
+
 
     patient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
