@@ -120,41 +120,136 @@
     }
 </style>
 
+<style>
+    /* ... existing styles ... */
+    .tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--glass-border);
+        padding-bottom: 1rem;
+    }
+
+    .tab-btn {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        color: #94A3B8;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        font-size: 1rem;
+    }
+
+    .tab-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #F8FAFC;
+    }
+
+    .tab-btn.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+</style>
+
 <div class="appointments-container">
     <div class="header-section">
         <h1>My Appointments</h1>
         <a href="{% url 'appointments:appointment_create' %}" class="btn">Book New</a>
     </div>
 
-    {% if appointments %}
-        <div class="appointment-grid">
-            {% for appointment in appointments %}
-                <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="appointment-card">
-                    <div class="status-badge status-{{ appointment.status }}">
-                        {{ appointment.get_status_display }}
-                    </div>
-                    
-                    <div class="date-box">
-                        <div class="date">{{ appointment.date|date:"M d, Y" }}</div>
-                        <div class="time">{{ appointment.time_slot|time:"g:i A" }}</div>
-                    </div>
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'active')">Active Bookings</button>
+        <button class="tab-btn" onclick="openTab(event, 'history')">History</button>
+    </div>
 
-                    <div class="info-line">
-                        <strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}
-                    </div>
-                    
-                    <div class="info-line">
-                        <strong>Reason:</strong> {{ appointment.reason|truncatechars:30 }}
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <h3>No appointments scheduled</h3>
-            <p>You haven't booked any appointments yet. Start by booking one with our expert doctors.</p>
-            <a href="{% url 'appointments:appointment_create' %}" class="btn">Book Your First Appointment</a>
-        </div>
-    {% endif %}
+    <!-- Active Bookings Tab -->
+    <div id="active" class="tab-content active">
+        {% if active_appointments %}
+            <div class="appointment-grid">
+                {% for appointment in active_appointments %}
+                    <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="appointment-card">
+                        <div class="status-badge status-{{ appointment.status }}">
+                            {{ appointment.get_status_display }}
+                        </div>
+                        <div class="date-box">
+                            <div class="date">{{ appointment.date|date:"M d, Y" }}</div>
+                            <div class="time">{{ appointment.time_slot|time:"g:i A" }}</div>
+                        </div>
+                        <div class="info-line">
+                            <strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}
+                        </div>
+                        <div class="info-line">
+                            <strong>Reason:</strong> {{ appointment.reason|truncatechars:30 }}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>No active appointments</h3>
+                <p>You don't have any pending or confirmed appointments at the moment.</p>
+                <a href="{% url 'appointments:appointment_create' %}" class="btn">Book New Appointment</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- History Tab -->
+    <div id="history" class="tab-content">
+        {% if history_appointments %}
+            <div class="appointment-grid">
+                {% for appointment in history_appointments %}
+                    <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="appointment-card">
+                        <div class="status-badge status-{{ appointment.status }}">
+                            {{ appointment.get_status_display }}
+                        </div>
+                        <div class="date-box">
+                            <div class="date">{{ appointment.date|date:"M d, Y" }}</div>
+                            <div class="time">{{ appointment.time_slot|time:"g:i A" }}</div>
+                        </div>
+                        <div class="info-line">
+                            <strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}
+                        </div>
+                        <div class="info-line">
+                            <strong>Reason:</strong> {{ appointment.reason|truncatechars:30 }}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>No history available</h3>
+                <p>You haven't completed any appointments yet.</p>
+            </div>
+        {% endif %}
+    </div>
 </div>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabContent, tabBtns;
+        tabContent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabContent.length; i++) {
+            tabContent[i].classList.remove("active");
+        }
+        tabBtns = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tabBtns.length; i++) {
+            tabBtns[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+</script>
+
 {% endblock %}

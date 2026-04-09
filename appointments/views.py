@@ -19,6 +19,18 @@ class AppointmentListView(LoginRequiredMixin, ListView):
             return Appointment.objects.all()
         return Appointment.objects.none()
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        all_appointments = self.get_queryset()
+        context['active_appointments'] = all_appointments.filter(
+            status__in=['pending', 'confirmed']
+        )
+        context['history_appointments'] = all_appointments.filter(
+            status__in=['completed', 'cancelled', 'no_show']
+        )
+        return context
+
+
 class AppointmentDetailView(LoginRequiredMixin, DetailView):
     model = Appointment
     template_name = 'appointments/appointment_detail.html'
