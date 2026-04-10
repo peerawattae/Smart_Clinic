@@ -76,6 +76,8 @@ class Appointment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    reminder_sent = models.BooleanField(default=False)
+
 
     class Meta:
         ordering = ['-date', '-time_slot']
@@ -85,6 +87,16 @@ class Appointment(models.Model):
                 name='unique_doctor_slot',
             ),
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_status = self.status
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        self._original_status = self.status
+
 
     def __str__(self):
         return (
