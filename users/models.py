@@ -96,6 +96,21 @@ class PatientProfile(models.Model):
         return f'Patient: {self.user.get_full_name()}'
 
 
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.title}"
+
+
+
 # Signals for automatic profile creation
 from django.db.models.signals import post_save
 from django.dispatch import receiver

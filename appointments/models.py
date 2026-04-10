@@ -76,6 +76,8 @@ class Appointment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    reminder_sent = models.BooleanField(default=False)
+
 
     class Meta:
         ordering = ['-date', '-time_slot']
