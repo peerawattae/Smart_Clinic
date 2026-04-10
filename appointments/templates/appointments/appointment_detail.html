@@ -1,0 +1,165 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Appointment Detail - Smart Clinic{% endblock %}
+
+{% block content %}
+<style>
+    .detail-container {
+        width: 100%;
+        max-width: 700px;
+        z-index: 10;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .detail-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .detail-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #F8FAFC, #94A3B8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        border-radius: 28px;
+        padding: 3rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .detail-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .label {
+        font-size: 0.85rem;
+        color: #94A3B8;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.3rem;
+    }
+
+    .value {
+        font-size: 1.15rem;
+        color: #F8FAFC;
+        font-weight: 600;
+    }
+
+    .full-width {
+        grid-column: span 2;
+    }
+
+    .status-pill {
+        display: inline-block;
+        padding: 0.5rem 1.25rem;
+        border-radius: 24px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-confirmed { background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-completed { background: rgba(59, 130, 246, 0.2); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-cancelled { background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .action-row {
+        margin-top: 3rem;
+        display: flex;
+        gap: 1.5rem;
+        justify-content: flex-start;
+    }
+
+    .reason-box {
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 18px;
+        padding: 1.5rem;
+        border: 1px solid var(--glass-border);
+        color: #CBD5E1;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+        .glass-card { grid-template-columns: 1fr; }
+        .full-width { grid-column: span 1; }
+    }
+</style>
+
+<div class="detail-container">
+    <div class="detail-header">
+        <h1>Appointment Detail</h1>
+        <a href="{% url 'appointments:appointment_list' %}" class="btn btn-outline">Back</a>
+    </div>
+
+    <div class="glass-card">
+        <div class="detail-section">
+            <div class="label">Patient Name</div>
+            <div class="value">{{ appointment.patient.get_full_name }}</div>
+        </div>
+
+        <div class="detail-section">
+            <div class="label">Consulting Doctor</div>
+            <div class="value">Dr. {{ appointment.doctor.get_full_name }}</div>
+        </div>
+
+        <div class="detail-section">
+            <div class="label">Date</div>
+            <div class="value">{{ appointment.date|date:"l, F j, Y" }}</div>
+        </div>
+
+        <div class="detail-section">
+            <div class="label">Time</div>
+            <div class="value">{{ appointment.time_slot|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</div>
+        </div>
+
+        <div class="detail-section">
+            <div class="label">Current Status</div>
+            <div class="status-pill status-{{ appointment.status }}">
+                {{ appointment.get_status_display }}
+            </div>
+        </div>
+
+        <div class="detail-section full-width">
+            <div class="label">Reason for Visit</div>
+            <div class="reason-box">
+                {{ appointment.reason|linebreaks }}
+            </div>
+        </div>
+
+        {% if appointment.notes %}
+        <div class="detail-section full-width">
+            <div class="label">Medical Notes</div>
+            <div class="reason-box">
+                {{ appointment.notes|linebreaks }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="action-row">
+        {% if request.user.role == 'doctor' or request.user.is_superuser %}
+            <a href="{% url 'appointments:appointment_update' appointment.pk %}" class="btn" style="padding: 0.8rem 1.5rem;">Update Outcome / Notes</a>
+        {% endif %}
+        
+        {% if appointment.status == 'pending' and request.user.role == 'patient' %}
+            <form action="#" method="POST" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline btn-cancel" style="padding: 0.8rem 1.5rem;">Cancel Appointment</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

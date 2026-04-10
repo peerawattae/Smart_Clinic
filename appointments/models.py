@@ -2,8 +2,42 @@ from django.db import models
 from django.conf import settings
 
 
+class AppointmentQuerySet(models.QuerySet):
+    def for_user(self, user):
+        if user.is_superuser:
+            return self.all()
+        if hasattr(user, 'role'):
+            if user.role == 'doctor':
+                return self.filter(doctor=user)
+            if user.role == 'patient':
+                return self.filter(patient=user)
+        return self.none()
+
+    def active(self):
+        return self.filter(status__in=['pending', 'confirmed'])
+
+    def history(self):
+        return self.filter(status__in=['completed', 'cancelled', 'no_show'])
+
+
+class AppointmentManager(models.Manager):
+    def get_queryset(self):
+        return AppointmentQuerySet(self.model, using=self._db)
+
+    def for_user(self, user):
+        return self.get_queryset().for_user(user)
+
+    def active_for_user(self, user):
+        return self.for_user(user).active()
+
+    def history_for_user(self, user):
+        return self.for_user(user).history()
+
+
 class Appointment(models.Model):
     """A scheduled appointment between a patient and a doctor."""
+    objects = AppointmentManager()
+
 
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'

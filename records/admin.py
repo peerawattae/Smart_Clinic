@@ -22,7 +22,7 @@ class MedicalRecordAdmin(admin.ModelAdmin):
         'diagnosis',
     )
     date_hierarchy = 'created_at'
-    inlines = [PrescriptionInline, VitalSignInline]
+    inlines = (PrescriptionInline, VitalSignInline)
 
 
 @admin.register(Prescription)

@@ -1,9 +1,19 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager as BaseUserManager
 from django.db import models
+
+
+class UserManager(BaseUserManager):
+    def doctors(self):
+        return self.filter(role='doctor')
+
+    def patients(self):
+        return self.filter(role='patient')
 
 
 class User(AbstractUser):
     """Custom user model with role-based access for the clinic."""
+    objects = UserManager()
+
 
     class Role(models.TextChoices):
         PATIENT = 'patient', 'Patient'
@@ -84,3 +94,24 @@ class PatientProfile(models.Model):
 
     def __str__(self):
         return f'Patient: {self.user.get_full_name()}'
+
+
+# Signals for automatic profile creation
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.role == User.Role.DOCTOR:
+            DoctorProfile.objects.get_or_create(user=instance)
+        elif instance.role == User.Role.PATIENT:
+            PatientProfile.objects.get_or_create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if instance.role == User.Role.DOCTOR and hasattr(instance, 'doctor_profile'):
+        instance.doctor_profile.save()
+    elif instance.role == User.Role.PATIENT and hasattr(instance, 'patient_profile'):
+        instance.patient_profile.save()
+
