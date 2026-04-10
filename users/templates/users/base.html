@@ -322,11 +322,44 @@
             text-decoration: underline;
         }
 
+        .btn-clear-all {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94A3B8;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+        }
+        .btn-clear-all:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .delete-notif-btn {
+            background: transparent;
+            border: none;
+            color: #475569;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            line-height: 1;
+            padding: 0 0.5rem;
+        }
+        .delete-notif-btn:hover {
+            color: #F87171;
+            transform: scale(1.2);
+        }
+
         /* Calendar icon color fix */
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
         }
+
 
 
     </style>
@@ -362,17 +395,25 @@
     {% if request.user.is_authenticated %}
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleNotifications()"></div>
     <div id="notif-sidebar" class="notif-sidebar">
+        {% csrf_token %}
         <div class="notif-sidebar-header">
             <h3>Notifications</h3>
-            <button class="close-notif" onclick="toggleNotifications()">&times;</button>
+            <div style="display: flex; align-items: center;">
+                <button onclick="clearAllNotifications()" class="btn-clear-all">Clear All</button>
+                <button class="close-notif" onclick="toggleNotifications()">&times;</button>
+            </div>
         </div>
         <div class="notif-sidebar-content">
             {% for notification in recent_notifications %}
-                <div class="notif-item-sidebar {% if not notification.is_read %}unread{% endif %}">
-                    <h4>{{ notification.title }}</h4>
+                <div id="notif-{{ notification.id }}" class="notif-item-sidebar {% if not notification.is_read %}unread{% endif %}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h4 style="margin: 0; padding-right: 1rem;">{{ notification.title }}</h4>
+                        <button onclick="deleteNotification({{ notification.id }})" class="delete-notif-btn" title="Dismiss">&times;</button>
+                    </div>
                     <p>{{ notification.message }}</p>
                     <span>{{ notification.created_at|timesince }} ago</span>
                 </div>
+
             {% empty %}
                 <div style="text-align: center; padding-top: 5rem; color: #64748B;">
                     <p>No notifications yet</p>
@@ -397,7 +438,45 @@
                 if (badge) badge.style.display = 'none';
             }
         }
+
+        function deleteNotification(id) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch(`/notifications/${id}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    const item = document.getElementById(`notif-${id}`);
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(20px)';
+                    setTimeout(() => item.remove(), 300);
+                }
+            });
+        }
+
+        function clearAllNotifications() {
+            if (!confirm('Clear all notifications?')) return;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch('/notifications/clear-all/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    const content = document.querySelector('.notif-sidebar-content');
+                    content.innerHTML = '<div style="text-align: center; padding-top: 5rem; color: #64748B;"><p>No notifications yet</p></div>';
+                    const badge = document.getElementById('notif-badge');
+                    if (badge) badge.remove();
+                }
+            });
+        }
     </script>
+
     {% endif %}
 </body>
 

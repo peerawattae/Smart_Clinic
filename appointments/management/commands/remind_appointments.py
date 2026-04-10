@@ -10,15 +10,17 @@ class Command(BaseCommand):
     help = 'Sends reminders to patients 24 hours before their appointments'
 
     def handle(self, *args, **options):
-        # Target date is tomorrow
-        tomorrow = timezone.now().date() + timedelta(days=1)
+        now = timezone.now()
+        # Target end date is tomorrow
+        end_date = now.date() + timedelta(days=1)
         
-        # Get pending/confirmed appointments for tomorrow that haven't had reminders sent
+        # Get pending/confirmed appointments for today or tomorrow that haven't had reminders sent
         appointments = Appointment.objects.filter(
-            date=tomorrow,
+            date__range=[now.date(), end_date],
             status__in=['pending', 'confirmed'],
             reminder_sent=False
         )
+
 
         count = 0
         for appt in appointments:

@@ -88,6 +88,16 @@ class Appointment(models.Model):
             ),
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_status = self.status
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        self._original_status = self.status
+
+
     def __str__(self):
         return (
             f'Appointment: {self.patient.get_full_name()} with '
