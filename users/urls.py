@@ -10,6 +10,8 @@ urlpatterns = [
     path('notifications/', views.NotificationListView.as_view(), name='notifications'),
     path('notifications/<int:pk>/delete/', views.delete_notification, name='delete_notification'),
     path('notifications/clear-all/', views.clear_all_notifications, name='clear_all_notifications'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('approve-doctor/<int:user_id>/', views.approve_doctor, name='approve_doctor'),
 ]
 
 

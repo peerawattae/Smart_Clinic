@@ -7,8 +7,9 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.admin.views.decorators import staff_member_required
 from .forms import CustomUserCreationForm
-from .models import Notification
+from .models import Notification, User, DoctorProfile
 
 
 def home_view(request):
@@ -35,6 +36,12 @@ def register_view(request):
             if role == 'doctor':
                 user.is_active = False # Pending admin approval
                 user.save()
+                
+                # Save doctor profile info
+                profile = user.doctor_profile
+                profile.specialization = form.cleaned_data.get('specialization')
+                profile.license_number = form.cleaned_data.get('license_number')
+                profile.save()
                 
                 return render(request, 'users/login.html', {
                     'form': AuthenticationForm(),
@@ -95,5 +102,34 @@ def clear_all_notifications(request):
         request.user.notifications.all().delete()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=400)
+
+
+@staff_member_required
+def admin_dashboard(request):
+    pending_doctors = User.objects.filter(role=User.Role.DOCTOR, is_active=False)
+    return render(request, 'users/admin_dashboard.html', {
+        'pending_doctors': pending_doctors
+    })
+
+@staff_member_required
+def approve_doctor(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(User, id=user_id, role=User.Role.DOCTOR)
+        action = request.POST.get('action')
+        
+        if action == 'approve':
+            user.is_active = True
+            user.save()
+            # Send notification to the doctor?
+            Notification.objects.create(
+                user=user,
+                title="Account Approved",
+                message="Your doctor account has been approved. You can now log in and manage your schedule."
+            )
+        elif action == 'reject':
+            user.delete()
+            
+        return redirect('admin_dashboard')
+    return redirect('admin_dashboard')
 
 
