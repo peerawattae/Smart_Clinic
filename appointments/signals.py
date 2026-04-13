@@ -12,6 +12,14 @@ def notify_appointment_changes(sender, instance, created, **kwargs):
             title="Appointment Booked",
             message=f"Your appointment with Dr. {instance.doctor.get_full_name()} on {instance.date} has been successfully booked. Status is currently: {instance.get_status_display()}."
         )
+
+        # 2. Notify doctor about new booking
+        Notification.objects.create(
+            user=instance.doctor,
+            title="New Patient Booking",
+            message=f"You have a new appointment booking from {instance.patient.get_full_name()} for {instance.date} at {instance.time_slot.strftime('%I:%M %p')}."
+        )
+
     else:
         # 2. Notify when status change from pending to confirm (or ANY status update that benefits user)
         if hasattr(instance, '_original_status') and instance.status != instance._original_status:
