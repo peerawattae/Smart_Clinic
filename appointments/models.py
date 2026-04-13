@@ -4,7 +4,7 @@ from django.conf import settings
 
 class AppointmentQuerySet(models.QuerySet):
     def for_user(self, user):
-        if user.is_superuser:
+        if user.is_superuser or user.is_staff or (hasattr(user, 'role') and user.role == 'admin'):
             return self.all()
         if hasattr(user, 'role'):
             if user.role == 'doctor':

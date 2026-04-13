@@ -381,7 +381,13 @@
                     <a href="{% url 'admin_dashboard' %}" style="color: #10B981;">Admin Dashboard</a>
                 {% endif %}
 
-                <a href="{% url 'appointments:appointment_list' %}">My Bookings</a>
+                <a href="{% url 'appointments:appointment_list' %}">
+                    {% if request.user.is_staff or request.user.is_superuser or request.user.role == 'admin' %}
+                        All Bookings
+                    {% else %}
+                        My Bookings
+                    {% endif %}
+                </a>
 
                 <a href="{% url 'logout' %}">Logout</a>
 
