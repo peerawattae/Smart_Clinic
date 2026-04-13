@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
@@ -42,6 +43,15 @@ def register_view(request):
                 profile.specialization = form.cleaned_data.get('specialization')
                 profile.license_number = form.cleaned_data.get('license_number')
                 profile.save()
+                
+                # Notify all admins
+                admins = User.objects.filter(Q(is_superuser=True) | Q(is_staff=True) | Q(role=User.Role.ADMIN))
+                for admin in admins:
+                    Notification.objects.create(
+                        user=admin,
+                        title="New Doctor Pending Approval",
+                        message=f"Dr. {user.get_full_name()} has registered and is waiting for approval."
+                    )
                 
                 return render(request, 'users/login.html', {
                     'form': AuthenticationForm(),
