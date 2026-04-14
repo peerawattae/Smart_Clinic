@@ -401,7 +401,7 @@
                 </a>
 
                 {% if request.user.is_staff %}
-                    <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">Admin Dashboard</a>
+                    <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">All Staff</a>
                 {% endif %}
 
                 <a href="{% url 'appointments:appointment_list' %}" class="{% if request.resolver_match.view_name == 'appointments:appointment_list' %}active{% endif %}">

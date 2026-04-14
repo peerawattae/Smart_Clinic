@@ -117,8 +117,14 @@ def clear_all_notifications(request):
 @staff_member_required
 def admin_dashboard(request):
     pending_doctors = User.objects.filter(role=User.Role.DOCTOR, is_active=False)
+    active_staff = User.objects.filter(
+        role__in=[User.Role.DOCTOR, User.Role.NURSE, User.Role.STAFF, User.Role.ADMIN],
+        is_active=True
+    ).exclude(id=request.user.id).order_by('role', 'first_name')
+    
     return render(request, 'users/admin_dashboard.html', {
-        'pending_doctors': pending_doctors
+        'pending_doctors': pending_doctors,
+        'active_staff': active_staff
     })
 
 @staff_member_required
@@ -138,6 +144,24 @@ def approve_doctor(request, user_id):
             )
         elif action == 'reject':
             user.delete()
+            
+        return redirect('admin_dashboard')
+    return redirect('admin_dashboard')
+
+@staff_member_required
+def toggle_staff_status(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(User, id=user_id)
+        if user.is_staff or user.role in [User.Role.DOCTOR, User.Role.NURSE, User.Role.STAFF, User.Role.ADMIN]:
+            user.is_active = not user.is_active
+            user.save()
+            
+            action = "activated" if user.is_active else "deactivated"
+            Notification.objects.create(
+                user=user,
+                title=f"Account {action.capitalize()}",
+                message=f"Your account has been {action} by an administrator."
+            )
             
         return redirect('admin_dashboard')
     return redirect('admin_dashboard')
