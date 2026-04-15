@@ -27,6 +27,12 @@ class AppointmentManager(models.Manager):
     def for_user(self, user):
         return self.get_queryset().for_user(user)
 
+    def active(self):
+        return self.get_queryset().active()
+
+    def history(self):
+        return self.get_queryset().history()
+
     def active_for_user(self, user):
         return self.for_user(user).active()
 

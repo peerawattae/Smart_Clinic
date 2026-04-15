@@ -59,6 +59,39 @@ The system follows a modular **Model-View-Template (MVT)** architecture using th
    python manage.py createsuperuser
    ```
 
+## 🧪 Testing and Quality Assurance
+
+The system includes a modular test suite covering unit tests for models and API tests for AJAX endpoints.
+
+1. **Run all tests**:
+   ```bash
+   python manage.py test
+   ```
+
+2. **Run tests with coverage**:
+   ```bash
+   coverage run manage.py test
+   ```
+
+3. **View coverage report**:
+   ```bash
+   coverage report
+   ```
+
+## 📊 Code Visualization (CodeCharta)
+
+Analyze the project structure and quality using CodeCharta:
+
+1. **Generate metrics**:
+   ```bash
+   npx -y codecharta-analysis unifiedparser . -o smart_clinic.cc.json -nc
+   npx -y codecharta-analysis gitlogparser repo-scan --repo-path . -o smart_clinic_git.cc.json -nc
+   npx -y codecharta-analysis merge smart_clinic.cc.json smart_clinic_git.cc.json -o smart_clinic_merged.cc.json -nc
+   ```
+
+2. **Visualize**:
+   Upload `smart_clinic_merged.cc.json` to [CodeCharta Web Studio](https://codecharta.com/visualization/app/index.html).
+
 ## 💻 How to Run the System
 
 1. **Start the development server**:
