@@ -437,13 +437,18 @@
         </div>
         <div class="notif-sidebar-content">
             {% for notification in recent_notifications %}
-                <div id="notif-{{ notification.id }}" class="notif-item-sidebar {% if not notification.is_read %}unread{% endif %}">
+                <div id="notif-{{ notification.id }}" class="notif-item-sidebar {% if not notification.is_read %}unread{% endif %}" {% if notification.link %}onclick="window.location.href='{{ notification.link }}'" style="cursor: pointer;"{% endif %}>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <h4 style="margin: 0; padding-right: 1rem;">{{ notification.title }}</h4>
-                        <button onclick="deleteNotification({{ notification.id }})" class="delete-notif-btn" title="Dismiss">&times;</button>
+                        <button onclick="deleteNotification(event, {{ notification.id }})" class="delete-notif-btn" title="Dismiss">&times;</button>
                     </div>
                     <p>{{ notification.message }}</p>
-                    <span>{{ notification.created_at|timesince }} ago</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>{{ notification.created_at|timesince }} ago</span>
+                        {% if notification.link %}
+                            <span style="color: var(--primary); font-size: 0.7rem; font-weight: 700;">Click to view &rarr;</span>
+                        {% endif %}
+                    </div>
                 </div>
 
             {% empty %}
@@ -471,7 +476,8 @@
             }
         }
 
-        function deleteNotification(id) {
+        function deleteNotification(event, id) {
+            event.stopPropagation();
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             fetch(`/notifications/${id}/delete/`, {
                 method: 'POST',
