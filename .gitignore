@@ -10,3 +10,5 @@ db.sqlite3
 .idea/
 *.swp
 *.swo
+# CodeCharta
+*.cc.json
