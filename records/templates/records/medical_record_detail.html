@@ -1,0 +1,181 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Medical Record - Smart Clinic{% endblock %}
+
+{% block content %}
+<style>
+    .record-container {
+        width: 100%;
+        max-width: 800px;
+        z-index: 10;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .record-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .record-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #F8FAFC, #94A3B8);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        border-radius: 28px;
+        padding: 3rem;
+    }
+
+    .record-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .label {
+        font-size: 0.8rem;
+        color: #94A3B8;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+
+    .content-box {
+        background: rgba(15, 23, 42, 0.3);
+        padding: 1.5rem;
+        border-radius: 18px;
+        border: 1px solid var(--glass-border);
+        color: #F8FAFC;
+        line-height: 1.7;
+    }
+
+    .restricted-overlay {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(15, 23, 42, 0.6);
+        border-radius: 24px;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .prescription-card {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        padding: 1.25rem;
+        border-radius: 18px;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="record-container">
+    <div class="record-header">
+        <h1>Visit Record</h1>
+        <a href="{% url 'appointments:appointment_list' %}" class="btn btn-outline">Close</a>
+    </div>
+
+    <!-- Always Show Basic Meta & Prescriptions -->
+    <div class="glass-card" style="margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <div>
+                <div class="label">Patient</div>
+                <div style="font-size: 1.2rem; font-weight: 700;">{{ record.patient.get_full_name }}</div>
+            </div>
+            <div>
+                <div class="label">Doctor</div>
+                <div style="font-size: 1.2rem; font-weight: 700;">Dr. {{ record.doctor.get_full_name }}</div>
+            </div>
+            <div>
+                <div class="label">Date</div>
+                <div>{{ record.created_at|date:"F j, Y" }}</div>
+            </div>
+        </div>
+
+        <div class="record-section">
+            <div class="label">Prescriptions</div>
+            {% if prescriptions %}
+                {% for p in prescriptions %}
+                    <div class="prescription-card">
+                        <div style="font-weight: 800; color: #10B981; margin-bottom: 0.25rem;">{{ p.medication_name }}</div>
+                        <div style="font-size: 0.9rem; color: #CBD5E1;">
+                            {{ p.dosage }} — {{ p.frequency }} ({{ p.duration }})
+                        </div>
+                        {% if p.instructions %}
+                            <div style="font-size: 0.85rem; color: #94A3B8; margin-top: 0.5rem; font-style: italic;">
+                                "{{ p.instructions }}"
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #64748B; font-style: italic;">No prescriptions issued for this visit.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if has_access %}
+        <!-- Full Record Content -->
+        <div class="glass-card">
+            <div class="record-section">
+                <div class="label">Diagnosis</div>
+                <div class="content-box">{{ record.diagnosis|linebreaks }}</div>
+            </div>
+            <div class="record-section">
+                <div class="label">Symptoms</div>
+                <div class="content-box">{{ record.symptoms|linebreaks }}</div>
+            </div>
+            <div class="record-section">
+                <div class="label">Treatment Plan</div>
+                <div class="content-box">{{ record.treatment|linebreaks }}</div>
+            </div>
+        </div>
+        
+        <!-- Approval Section for Doctors -->
+        {% if request.user == record.doctor or request.user.role == 'admin' %}
+            {% for access_req in record.access_requests.all %}
+                {% if access_req.status == 'pending' %}
+                    <div class="glass-card" style="margin-top: 2rem; border-color: var(--primary);">
+                        <h3 style="margin-bottom: 1rem;">Pending Access Request</h3>
+                        <p style="margin-bottom: 1.5rem; color: #94A3B8;">Patient <strong>{{ access_req.patient.get_full_name }}</strong> has requested to view the full details of this record.</p>
+                        <form action="{% url 'records:approve_access' access_req.id %}" method="POST" style="display: flex; gap: 1rem;">
+                            {% csrf_token %}
+                            <button name="action" value="approve" class="btn" style="flex: 1;">Approve Access</button>
+                            <button name="action" value="reject" class="btn btn-outline" style="flex: 1; color: #EF4444; border-color: #EF4444;">Reject</button>
+                        </form>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+    {% else %}
+        <!-- Access Restricted Message / Request Button -->
+        <div class="restricted-overlay">
+            <h2 style="color: #EF4444; margin-bottom: 1rem;">Full Record Locked</h2>
+            <p style="color: #94A3B8; margin-bottom: 2.5rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+                For privacy reasons, full medical records require doctor approval to be viewed by patients. You can still see your prescriptions above.
+            </p>
+            
+            {% if pending_request %}
+                <div class="btn btn-outline" style="cursor: default; opacity: 0.6;">
+                    Request Pending Approval...
+                </div>
+            {% else %}
+                <form action="{% url 'records:request_access' record.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn">Request Full Access</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

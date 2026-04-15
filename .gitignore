@@ -12,3 +12,7 @@ db.sqlite3
 *.swo
 # CodeCharta
 *.cc.json
+
+# Test Coverage
+.coverage
+htmlcov/

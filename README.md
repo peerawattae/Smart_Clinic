@@ -59,6 +59,25 @@ The system follows a modular **Model-View-Template (MVT)** architecture using th
    python manage.py createsuperuser
    ```
 
+## 🧪 Testing and Quality Assurance
+
+The system includes a modular test suite covering unit tests for models and API tests for AJAX endpoints.
+
+1. **Run all tests**:
+   ```bash
+   python manage.py test
+   ```
+
+2. **Run tests with coverage**:
+   ```bash
+   coverage run manage.py test
+   ```
+
+3. **View coverage report**:
+   ```bash
+   coverage report
+   ```
+
 ## 💻 How to Run the System
 
 1. **Start the development server**:
