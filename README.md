@@ -29,7 +29,7 @@ The system follows a modular **Model-View-Template (MVT)** architecture using th
     - JavaScript (ES6+ for dynamic UI & AJAX/JSON integration)
 - **Typography**: Google Fonts (Inter, Outfit)
 
-## 🚀 Installation & Setup Instructions
+## Installation & Setup Instructions
 
 1. **Clone the repository**:
    ```bash
@@ -59,7 +59,7 @@ The system follows a modular **Model-View-Template (MVT)** architecture using th
    python manage.py createsuperuser
    ```
 
-## 🧪 Testing and Quality Assurance
+## Testing and Quality Assurance
 
 The system includes a modular test suite covering unit tests for models and API tests for AJAX endpoints.
 
@@ -78,7 +78,7 @@ The system includes a modular test suite covering unit tests for models and API 
    coverage report
    ```
 
-## 💻 How to Run the System
+## How to Run the System
 
 1. **Start the development server**:
    ```bash
