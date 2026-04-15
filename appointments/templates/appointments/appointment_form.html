@@ -94,9 +94,10 @@
         box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
     }
 
-    select option {
-        background-color: #1E293B;
-        color: white;
+    select option:disabled {
+        color: #475569;
+        background-color: #0F172A;
+        font-style: italic;
     }
 </style>
 
@@ -107,7 +108,7 @@
     </div>
 
     <div class="glass-inner">
-        <form method="post">
+        <form method="post" id="appointmentForm">
             {% csrf_token %}
             
             {% for field in form %}
@@ -139,4 +140,51 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const doctorSelect = document.getElementById('id_doctor');
+        const dateInput = document.getElementById('id_date');
+        const timeSelect = document.getElementById('id_time_slot');
+
+        function updateAvailableSlots() {
+            const doctorId = doctorSelect.value;
+            const date = dateInput.value;
+
+            if (!doctorId || !date) return;
+
+            // Reset all options first
+            Array.from(timeSelect.options).forEach(option => {
+                option.disabled = false;
+                option.style.opacity = '1';
+                option.text = option.text.replace(' (Booked)', '');
+            });
+
+            fetch(`/appointments/get-taken-slots/?doctor_id=${doctorId}&date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    const takenSlots = data.taken_slots;
+                    Array.from(timeSelect.options).forEach(option => {
+                        if (takenSlots.includes(option.value)) {
+                            option.disabled = true;
+                            option.style.opacity = '0.5';
+                            if (!option.text.includes('(Booked)')) {
+                                option.text += ' (Booked)';
+                            }
+                        }
+                    });
+                });
+        }
+
+        if (doctorSelect && dateInput) {
+            doctorSelect.addEventListener('change', updateAvailableSlots);
+            dateInput.addEventListener('change', updateAvailableSlots);
+            
+            // Initial check if values exist
+            if (doctorSelect.value && dateInput.value) {
+                updateAvailableSlots();
+            }
+        }
+    });
+</script>
 {% endblock %}

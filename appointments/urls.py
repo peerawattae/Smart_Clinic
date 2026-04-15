@@ -5,13 +5,15 @@ from .views import (
     AppointmentCreateView,
     AppointmentUpdateView,
     DoctorAvailabilityListView,
-    DoctorAvailabilityCreateView
+    DoctorAvailabilityCreateView,
+    get_taken_slots
 )
 
 app_name = 'appointments'
 
 urlpatterns = [
     path('', AppointmentListView.as_view(), name='appointment_list'),
+    path('get-taken-slots/', get_taken_slots, name='get_taken_slots'),
     path('<int:pk>/', AppointmentDetailView.as_view(), name='appointment_detail'),
     path('<int:pk>/update/', AppointmentUpdateView.as_view(), name='appointment_update'),
     path('new/', AppointmentCreateView.as_view(), name='appointment_create'),
