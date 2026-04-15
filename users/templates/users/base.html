@@ -402,6 +402,7 @@
 
                 {% if request.user.is_staff %}
                     <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">All Staff</a>
+                    <a href="{% url 'all_patients' %}" class="{% if request.resolver_match.url_name == 'all_patients' %}active{% endif %}">All Patients</a>
                 {% endif %}
 
                 <a href="{% url 'appointments:appointment_list' %}" class="{% if request.resolver_match.view_name == 'appointments:appointment_list' %}active{% endif %}">

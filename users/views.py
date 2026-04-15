@@ -10,7 +10,8 @@ from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.admin.views.decorators import staff_member_required
 from .forms import CustomUserCreationForm, StaffEditForm
-from .models import Notification, User, DoctorProfile
+from .models import Notification, User, DoctorProfile, PatientProfile
+from records.models import MedicalRecord
 
 
 def home_view(request):
@@ -125,6 +126,17 @@ def admin_dashboard(request):
     return render(request, 'users/admin_dashboard.html', {
         'pending_doctors': pending_doctors,
         'active_staff': active_staff
+    })
+
+@staff_member_required
+def all_patients(request):
+    patients = User.objects.filter(role=User.Role.PATIENT).prefetch_related(
+        'patient_profile', 
+        'medical_records',
+        'patient_appointments'
+    ).order_by('first_name')
+    return render(request, 'users/all_patients.html', {
+        'patients': patients
     })
 
 @staff_member_required
