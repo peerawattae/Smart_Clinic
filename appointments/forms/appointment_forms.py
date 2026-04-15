@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Appointment
+from ..models import Appointment
 
 User = get_user_model()
 
@@ -68,4 +68,3 @@ class AppointmentForm(forms.ModelForm):
         for field in self.fields.values():
             if not isinstance(field.widget, forms.HiddenInput):
                 field.widget.attrs.update({'class': 'glass-input'})
-
