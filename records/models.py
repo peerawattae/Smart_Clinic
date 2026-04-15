@@ -130,3 +130,24 @@ class VitalSign(models.Model):
 
     def __str__(self):
         return f'Vitals for Record #{self.record_id} ({self.recorded_at:%Y-%m-%d %H:%M})'
+
+
+class MedicalRecordAccessRequest(models.Model):
+    """A request from a patient to view their full medical record."""
+    status_choices = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE, related_name='access_requests')
+    patient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=status_choices, default='pending')
+    request_date = models.DateTimeField(auto_now_add=True)
+    approval_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('record', 'patient')
+
+    def __str__(self):
+        return f'Access Request: {self.patient.username} for Record #{self.record.id} ({self.status})'

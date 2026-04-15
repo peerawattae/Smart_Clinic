@@ -151,7 +151,8 @@
 
     <div class="action-row">
         {% if request.user.role == 'doctor' or request.user.is_superuser %}
-            <a href="{% url 'appointments:appointment_update' appointment.pk %}" class="btn" style="padding: 0.8rem 1.5rem;">Update Outcome / Notes</a>
+            <a href="{% url 'appointments:appointment_update' appointment.pk %}" class="btn btn-outline" style="padding: 0.8rem 1.5rem;">Update Status</a>
+            <a href="{% url 'records:add_record' appointment.pk %}" class="btn" style="padding: 0.8rem 1.5rem;">Create Medical Record</a>
         {% endif %}
         
         {% if appointment.status == 'pending' and request.user.role == 'patient' %}
