@@ -1,0 +1,96 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Edit Staff - Smart Clinic{% endblock %}
+
+{% block content %}
+<div class="glass-panel" style="max-width: 600px;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <h2 style="font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #FFFFFF, #CBD5E1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            Edit Staff Info
+        </h2>
+        <p style="color: #94A3B8; margin-top: 0.5rem;">Updating information for {{ staff.get_full_name }}</p>
+    </div>
+
+    <!-- Current Info Preview -->
+    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 style="font-size: 0.9rem; color: #64748B; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Current Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+            <div>
+                <span style="color: #64748B;">Name:</span>
+                <span style="color: white; margin-left: 0.5rem;">{{ staff.get_full_name }}</span>
+            </div>
+            <div>
+                <span style="color: #64748B;">Role:</span>
+                <span style="color: #10B981; margin-left: 0.5rem;">{{ staff.get_role_display }}</span>
+            </div>
+            <div>
+                <span style="color: #64748B;">Email:</span>
+                <span style="color: white; margin-left: 0.5rem;">{{ staff.email }}</span>
+            </div>
+            <div>
+                <span style="color: #64748B;">Phone:</span>
+                <span style="color: white; margin-left: 0.5rem;">{{ staff.phone|default:"-" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div style="display: grid; gap: 1.5rem;">
+            {% for field in form %}
+                <div class="form-group" {% if staff.role != 'doctor' and field.name in 'specialization license_number years_of_experience bio' %}style="display:none;"{% endif %}>
+                    <label style="display: block; margin-bottom: 0.5rem; color: #94A3B8; font-size: 0.9rem; font-weight: 600;">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color: #F87171; font-size: 0.8rem; margin-top: 0.3rem;">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2.5rem;">
+            <button type="submit" class="btn" style="flex: 1;">Save Changes</button>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline" style="flex: 1;">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    textarea {
+        width: 100%;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--glass-border);
+        color: white;
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.3s ease;
+        resize: vertical;
+    }
+    textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+    select {
+        width: 100%;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--glass-border);
+        color: white;
+        font-size: 1rem;
+        outline: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1.25rem;
+    }
+</style>
+{% endblock %}

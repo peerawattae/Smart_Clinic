@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.admin.views.decorators import staff_member_required
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, StaffEditForm
 from .models import Notification, User, DoctorProfile
 
 
@@ -165,5 +165,21 @@ def toggle_staff_status(request, user_id):
             
         return redirect('admin_dashboard')
     return redirect('admin_dashboard')
+
+@staff_member_required
+def edit_staff(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        form = StaffEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_dashboard')
+    else:
+        form = StaffEditForm(instance=user)
+    
+    return render(request, 'users/edit_staff.html', {
+        'form': form,
+        'staff': user
+    })
 
 

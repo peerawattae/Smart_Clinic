@@ -88,6 +88,7 @@
                     </div>
                     <div style="display: flex; gap: 0.6rem;">
                         <button onclick="toggleDetails('{{ staff.id }}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Details</button>
+                        <a href="{% url 'edit_staff' staff.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; color: #60A5FA; border-color: rgba(96, 165, 250, 0.2);">Edit</a>
                         <form action="{% url 'toggle_staff_status' staff.id %}" method="POST" style="margin: 0; gap: 0;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-color: rgba(248, 113, 113, 0.2); color: rgba(248, 113, 113, 0.8);">Remove Approval</button>
