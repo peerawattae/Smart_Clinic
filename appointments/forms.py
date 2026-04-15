@@ -4,6 +4,14 @@ from .models import Appointment
 
 User = get_user_model()
 
+class DoctorChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        try:
+            specialization = obj.doctor_profile.specialization
+            return f"{obj.get_full_name()} ({specialization})"
+        except:
+            return obj.get_full_name()
+
 class AppointmentForm(forms.ModelForm):
     TIME_CHOICES = [
         ('09:00', '09:00 AM'), ('09:30', '09:30 AM'),
@@ -48,9 +56,13 @@ class AppointmentForm(forms.ModelForm):
                 self.fields['patient'].required = False
                 
                 # Patients choose from doctors
-                self.fields['doctor'].queryset = User.objects.filter(role='doctor')
-                self.fields['doctor'].label = "Select Doctor"
-                self.fields['doctor'].empty_label = "Choose a specialist..."
+                doctors = User.objects.filter(role='doctor').select_related('doctor_profile')
+                self.fields['doctor'] = DoctorChoiceField(
+                    queryset=doctors,
+                    label="Select Doctor",
+                    empty_label="Choose a specialist...",
+                    widget=forms.Select(attrs={'class': 'glass-input'})
+                )
 
         # Apply consistent styling
         for field in self.fields.values():

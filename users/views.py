@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.admin.views.decorators import staff_member_required
-from .forms import CustomUserCreationForm, StaffEditForm
+from .forms import CustomUserCreationForm, StaffEditForm, PatientProfileForm
 from .models import Notification, User, DoctorProfile, PatientProfile
 from records.models import MedicalRecord
 
@@ -192,6 +192,20 @@ def edit_staff(request, user_id):
     return render(request, 'users/edit_staff.html', {
         'form': form,
         'staff': user
+    })
+
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        form = PatientProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = PatientProfileForm(instance=request.user)
+    
+    return render(request, 'users/profile.html', {
+        'form': form
     })
 
 

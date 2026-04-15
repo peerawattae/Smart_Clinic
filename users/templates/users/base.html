@@ -406,12 +406,10 @@
                 {% endif %}
 
                 <a href="{% url 'appointments:appointment_list' %}" class="{% if request.resolver_match.view_name == 'appointments:appointment_list' %}active{% endif %}">
-                    {% if request.user.is_staff or request.user.is_superuser or request.user.role == 'admin' %}
-                        All Bookings
-                    {% else %}
-                        My Bookings
-                    {% endif %}
+                    {% if request.user.role == 'admin' %}All Bookings{% else %}My Bookings{% endif %}
                 </a>
+
+                <a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">My Profile</a>
 
                 <a href="{% url 'logout' %}">Logout</a>
 
