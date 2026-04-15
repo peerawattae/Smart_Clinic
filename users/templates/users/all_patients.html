@@ -1,0 +1,122 @@
+{% extends 'users/base.html' %}
+
+{% block title %}All Patients - Smart Clinic{% endblock %}
+
+{% block content %}
+<div class="glass-panel" style="max-width: 1100px; padding: 2.5rem;">
+    <div style="margin-bottom: 2.5rem;">
+        <h1 style="font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #FFFFFF, #CBD5E1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            Patient Directory
+        </h1>
+        <p style="color: #94A3B8; margin-top: 0.5rem;">Manage patients and view completed booking history</p>
+    </div>
+
+    <div style="display: grid; gap: 1.5rem;">
+        {% for patient in patients %}
+            <div class="patient-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem; transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="display: flex; gap: 1.5rem; align-items: center;">
+                        <div style="width: 55px; height: 55px; background: rgba(255, 255, 255, 0.05); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                            👤
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; color: white; margin-bottom: 0.2rem;">{{ patient.get_full_name }}</h3>
+                            <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.85rem; color: #64748B;">
+                                <span>ID: #PAT-{{ patient.id }}</span>
+                                <span style="background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 2px 8px; border-radius: 6px; font-weight: 600;">{{ patient.patient_profile.blood_type|default:"N/A" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.8rem;">
+                        <button onclick="toggleMedicalHistory('{{ patient.id }}')" class="btn" style="padding: 0.6rem 1.2rem; font-size: 0.85rem;">Booking History</button>
+                    </div>
+                </div>
+
+                <!-- Summary Sections -->
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                    <div class="stat-item">
+                        <p style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; margin-bottom: 0.25rem;">Contact Info</p>
+                        <p style="color: #CBD5E1; font-size: 0.9rem;">{{ patient.email }}</p>
+                        <p style="color: #94A3B8; font-size: 0.85rem;">{{ patient.phone|default:"No phone provided" }}</p>
+                    </div>
+                    <div class="stat-item">
+                        <p style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; margin-bottom: 0.25rem;">Latest Reason for Visit</p>
+                        <p style="color: #CBD5E1; font-size: 0.95rem; line-height: 1.4;">
+                            {% with latest=patient.patient_appointments.first %}
+                                {{ latest.reason|default:"No previous booking reasons recorded." }}
+                            {% endwith %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Booking History (Expandable) -->
+                <div id="history-{{ patient.id }}" style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 2px dashed rgba(255, 255, 255, 0.05); animation: slideDown 0.4s ease;">
+                    <h4 style="font-size: 1rem; color: white; margin-bottom: 1.5rem; display: flex; justify-content: space-between;">
+                        <span>Completed Bookings</span>
+                        <span style="color: #10B981; font-size: 0.8rem;">History</span>
+                    </h4>
+                    
+                    <div style="display: grid; gap: 1rem;">
+                        {% for booking in patient.patient_appointments.all %}
+                            {% if booking.status == 'completed' %}
+                                <div style="background: rgba(15, 23, 42, 0.4); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-size: 0.9rem; color: #FFFFFF; font-weight: 700;">{{ booking.date|date:"F d, Y" }}</span>
+                                            <span style="font-size: 0.75rem; color: #64748B;">{{ booking.time_slot|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</span>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="font-size: 0.8rem; color: #94A3B8;">Dr. {{ booking.doctor.get_full_name }}</span>
+                                            <p style="font-size: 0.7rem; color: #10B981; text-transform: uppercase; font-weight: 800; margin-top: 0.2rem;">Completed</p>
+                                        </div>
+                                    </div>
+                                    <div style="background: rgba(255, 255, 255, 0.02); padding: 0.8rem; border-radius: 8px;">
+                                        <p style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; margin-bottom: 0.4rem;">Visit Reason</p>
+                                        <p style="color: #CBD5E1; font-size: 0.9rem;">{{ booking.reason }}</p>
+                                    </div>
+                                    {% if booking.notes %}
+                                    <div style="margin-top: 0.8rem; padding-left: 0.8rem; border-left: 2px solid rgba(16, 185, 129, 0.3);">
+                                        <p style="font-size: 0.75rem; color: #64748B; text-transform: uppercase; margin-bottom: 0.2rem;">Doctor's Notes</p>
+                                        <p style="color: #94A3B8; font-size: 0.85rem; font-style: italic;">{{ booking.notes }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% empty %}
+                            <div style="text-align: center; padding: 2rem; color: #64748B; font-size: 0.9rem; background: rgba(255,255,255,0.01); border-radius: 12px;">
+                                No completed bookings found.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div style="text-align: center; padding: 5rem;">
+                <p style="color: #64748B;">No patients registered in the system yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleMedicalHistory(id) {
+        const history = document.getElementById(`history-${id}`);
+        const isVisible = history.style.display === 'block';
+        history.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+            history.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+</script>
+
+<style>
+    .patient-card:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        transform: translateY(-3px);
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import JsonResponse
 from ..models import Appointment
 from ..forms import AppointmentForm
 
@@ -55,3 +56,21 @@ class AppointmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
     def test_func(self):
         appointment = self.get_object()
         return self.request.user == appointment.doctor or self.request.user.is_superuser
+
+def get_taken_slots(request):
+    doctor_id = request.GET.get('doctor_id')
+    date = request.GET.get('date')
+    
+    if not doctor_id or not date:
+        return JsonResponse({'taken_slots': []})
+        
+    taken_appointments = Appointment.objects.filter(
+        doctor_id=doctor_id,
+        date=date,
+        status__in=['pending', 'confirmed']
+    )
+    
+    # Format times as HH:MM
+    taken_slots = [app.time_slot.strftime('%H:%M') for app in taken_appointments]
+    
+    return JsonResponse({'taken_slots': taken_slots})

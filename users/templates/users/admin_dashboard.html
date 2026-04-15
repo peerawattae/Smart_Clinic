@@ -1,0 +1,157 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Staff Management - Smart Clinic{% endblock %}
+
+{% block content %}
+<div class="glass-panel" style="max-width: 1000px; padding: 2.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #FFFFFF, #CBD5E1); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                Staff Management
+            </h1>
+            <p style="color: #94A3B8; margin-top: 0.5rem;">Manage all clinic personnel and approvals</p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem 1.2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <span style="font-weight: 700; color: #F87171;">{{ pending_doctors.count }}</span>
+                <span style="color: #94A3B8; font-size: 0.9rem; margin-left: 0.4rem;">Pending</span>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem 1.2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <span style="font-weight: 700; color: #10B981;">{{ active_staff.count }}</span>
+                <span style="color: #94A3B8; font-size: 0.9rem; margin-left: 0.4rem;">Active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PENDING APPROVALS SECTION -->
+    {% if pending_doctors %}
+    <h2 style="font-size: 1.25rem; color: #F87171; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="background: #F87171; width: 8px; height: 8px; border-radius: 50%;"></span>
+        Pending Approvals
+    </h2>
+    <div style="display: grid; gap: 1.5rem; margin-bottom: 3rem;">
+        {% for doctor in pending_doctors %}
+            <div class="staff-card pending" style="background: rgba(248, 113, 113, 0.03); border: 1px solid rgba(248, 113, 113, 0.15); border-radius: 20px; padding: 1.5rem; transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="display: flex; gap: 1.5rem; align-items: center;">
+                        <div style="width: 50px; height: 50px; background: rgba(248, 113, 113, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                            👨‍⚕️
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 700; color: white;">{{ doctor.get_full_name }}</h3>
+                            <span style="font-size: 0.8rem; color: #F87171; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">{{ doctor.get_role_display }}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.8rem;">
+                        <form action="{% url 'approve_doctor' doctor.id %}" method="POST" style="margin: 0; gap: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #10B981; color: white;">Approve</button>
+                        </form>
+                        <form action="{% url 'approve_doctor' doctor.id %}" method="POST" style="margin: 0; gap: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.85rem; border-color: rgba(248, 113, 113, 0.3); color: #F87171;">Reject</button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Mini Details -->
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: #94A3B8; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <span><strong>Spec:</strong> {{ doctor.doctor_profile.specialization }}</span>
+                    <span><strong>License:</strong> {{ doctor.doctor_profile.license_number }}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ACTIVE STAFF SECTION -->
+    <h2 style="font-size: 1.25rem; color: white; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="background: #10B981; width: 8px; height: 8px; border-radius: 50%;"></span>
+        Clinic Staff
+    </h2>
+    <div style="display: grid; gap: 1rem;">
+        {% for staff in active_staff %}
+            <div class="staff-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem; transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 1.25rem; align-items: center;">
+                        <div style="width: 45px; height: 45px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                            {% if staff.role == 'doctor' %}👨‍⚕️{% elif staff.role == 'nurse' %}👩‍⚕️{% else %}👤{% endif %}
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1rem; font-weight: 600; color: white;">{{ staff.get_full_name }}</h3>
+                            <div style="display: flex; gap: 0.8rem; align-items: center; margin-top: 0.2rem;">
+                                <span style="font-size: 0.75rem; color: #94A3B8; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 4px;">{{ staff.get_role_display }}</span>
+                                <span style="font-size: 0.75rem; color: #64748B;">{{ staff.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.6rem;">
+                        <button onclick="toggleDetails('{{ staff.id }}')" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Details</button>
+                        <a href="{% url 'edit_staff' staff.id %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; color: #60A5FA; border-color: rgba(96, 165, 250, 0.2);">Edit</a>
+                        <form action="{% url 'toggle_staff_status' staff.id %}" method="POST" style="margin: 0; gap: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-color: rgba(248, 113, 113, 0.2); color: rgba(248, 113, 113, 0.8);">Remove Approval</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Expanded Details (Hidden by default) -->
+                <div id="details-{{ staff.id }}" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.05); animation: fadeIn 0.3s ease;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; font-size: 0.9rem;">
+                        <div>
+                            <p style="color: #64748B; margin-bottom: 0.3rem;">Phone</p>
+                            <p style="color: #CBD5E1;">{{ staff.phone|default:"Not provided" }}</p>
+                        </div>
+                        {% if staff.role == 'doctor' %}
+                        <div>
+                            <p style="color: #64748B; margin-bottom: 0.3rem;">Specialization</p>
+                            <p style="color: #CBD5E1;">{{ staff.doctor_profile.specialization }}</p>
+                        </div>
+                        <div>
+                            <p style="color: #64748B; margin-bottom: 0.3rem;">License Number</p>
+                            <p style="color: #CBD5E1;">{{ staff.doctor_profile.license_number }}</p>
+                        </div>
+                        <div>
+                            <p style="color: #64748B; margin-bottom: 0.3rem;">Experience</p>
+                            <p style="color: #CBD5E1;">{{ staff.doctor_profile.years_of_experience }} Years</p>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <p style="color: #64748B; margin-bottom: 0.3rem;">Bio</p>
+                            <p style="color: #94A3B8; line-height: 1.5;">{{ staff.doctor_profile.bio|default:"No bio available." }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div style="text-align: center; padding: 3rem; color: #64748B; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+                No active staff found.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleDetails(id) {
+        const details = document.getElementById(`details-${id}`);
+        const isVisible = details.style.display === 'block';
+        details.style.display = isVisible ? 'none' : 'block';
+    }
+</script>
+
+<style>
+    .staff-card:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        transform: translateY(-2px);
+    }
+    .staff-card.pending:hover {
+        background: rgba(248, 113, 113, 0.05) !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
